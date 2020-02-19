@@ -32,3 +32,23 @@ CREATE TABLE department(
   PRIMARY KEY (id)
 
 );
+INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("Paul","Flowers", "1", "1"), 
+("John","Dorian", "5", "3"), ("Christopher","Turk", "3", "1"),("Molly","Clock", "3", "2"), ("Bob","Kelso", "2", "2");
+
+
+
+INSERT INTO department (name) VALUES ("Finance"),("Information Technology"),("Accounting"),("Marketing"),("Production");
+
+SELECT * FROM department;
+
+INSERT INTO role (title, salary, department_id) VALUES ("Engineer", 5000, 2),("Accountant", 3000, 3), ("Manager", 6500, 4), ("Analyst", 4500, 2);
+
+SELECT * FROM role;
+
+
+SELECT  d.name
+FROM employee e, role r, department d
+WHERE e.role_id = r.id AND
+r.department_id =d.id;
+
+SELECT name FROM department;
