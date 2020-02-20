@@ -51,4 +51,8 @@ FROM employee e, role r, department d
 WHERE e.role_id = r.id AND
 r.department_id =d.id;
 
-SELECT name FROM department;
+SELECT  e.first_name, e.last_name, r.title
+FROM employee e, role r
+WHERE e.role_id = r.id;
+
+SELECT first_name, last_name FROM employee;
