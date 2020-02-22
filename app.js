@@ -48,7 +48,7 @@ function startApp() {
             break;
     
           case "View Employees By Role":
-            console.log("view Employees By Role - Function to be written");
+            employeeByRole();
             break;
 
           case "Add New Employee":
@@ -155,28 +155,36 @@ function employeeByDepartment() {
 //================================View employee by role=============================================
 
 function employeeByRole() {
-
+  connection.query("SELECT title FROM role", function(err, results) {
+    if (err) throw err;        
+    inquirer
+      .prompt({
+        name: "title",
+        type: "list",
+        message: "Select Role",
+        choices: function() {
+          //start of function
+          var employeeTitles = [];
+          for (var i = 0; i < results.length; i++){
+            employeeTitles.push(results[i].title);
+          }    
+          return employeeTitles;
+        }
+      })
+      .then(function(answer){
+        console.log(answer.title);
+        var query = "SELECT e.first_name, e.last_name, r.title FROM employee e, role r WHERE e.role_id = r.id AND ?";
+        connection.query(query, { title: answer.title}, function(err, results) {
+          if (err) throw err;
+          console.table(results);
+          connection.end();
+          return results;
   
-  return inquirer
-  .prompt({
-    name: "empName",
-    type: "list",
-    message: "Which employee do you want to remove?",
-    choices: ["Engineer", "Accountant", "Manager", "Analyst"]
-  })
-    .then(function(answer){
-      var query = "SELECT e.first_name, e.last_name, r.title FROM employee e, role r WHERE e.role_id = r.id AND ?";
-      connection.query(query, { title: answer.role}, function(err, results) {
-        if (err) throw err;
-        console.table(results);
-        connection.end();
-        return results;
-
       });
-     
-    });
-
+    });  
+  });
 }
+
 
 // =======================================Add Employee==============================================================
 
