@@ -185,14 +185,45 @@ function employeeByRole() {
   });
 }
 
+// get Titles - Promisified function
+function getTitles(){
+  return new Promise((resolve, reject) => {
+    connection.query("SELECT title FROM role", function(err, results) {
+      if (err) return reject(err);        
+      var employeeTitles = [];
+      for (var i = 0; i < results.length; i++){
+          employeeTitles.push(results[i].title);
+      }
+      return resolve(employeeTitles);
+    })
+  });
+}
+
+// get Managers - Promisified function
+function getManagers(){
+  return new Promise((resolve, reject) => {
+    connection.query("SELECT first_name, last_name FROM employee e, role r WHERE e.role_id = r.id AND r.title = 'Manager'", function(err, results) {
+      if (err) return reject(err);        
+      var managerNames = [];
+      for (var i = 0; i < results.length; i++){
+          managerNames.push(results[i].first_name + " " + results[i].last_name);
+      }
+      return resolve(managerNames);
+    })
+  });
+}
 
 // =======================================Add Employee==============================================================
 
 
-  function addNewEmployee(){
+  async function addNewEmployee(){
+    let empTitles = await getTitles();
+    let managerNames = await getManagers();
+    
+    // end select
     inquirer
         .prompt([{
-            name: "Name",
+            name: "firstName",
             type: "input",
             message: "Enter employee's first name: "
         },
@@ -202,23 +233,52 @@ function employeeByRole() {
             message: "Enter employees last name: "
         },
         {
-            name: "roleID",
-            type: "input",
-            message: "Enter role ID: "
+            name: "role",
+            type: "list",
+            message: "Select Employee Role:",
+            choices: empTitles
         },
         {
-            name: "managerID",
-            type: "input",
-            message: "Enter mananger ID: "
+            name: "manager",
+            type: "list",
+            message: "Select Employee's Manager: ",
+            choices: managerNames
         }
     ])
-        .then(function (answer) {
-            connection.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${answer.firstName}","${answer.lastName}",${answer.roleID},${answer.managerID})`, function (err, result) {
+        .then(async function (answer) {
+          connection.query("SELECT id FROM role WHERE ?", {title:answer.role}, function(err, roleId){ 
+            if (err) throw err;
+            //split name into first name and last name
+            var managerFirstName = answer.manager.split(' ').slice(0, -1).join(' ');
+            var managerLastName = answer.manager.split(' ').slice(-1).join(' ');
+            //console.log("First Name: " + managerFirstName + "Last Name: " + managerLastName);
+
+            //get Manager ID
+
+            connection.query("SELECT id FROM employee WHERE ? AND ?", [{first_name:managerFirstName}, {last_name:managerLastName}], function(err, managerId){
+            
+              if (err) {
+                console.log(err);
+                throw err;
+              }
+              // Insert Query
+              connection.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${answer.firstName}","${answer.lastName}",${roleId[0].id},${managerId[0].id})`, function (err, result) {
                 if (err) throw err;
                 console.log(result.affectedRows + " record(s) updated");
-            })
+              })
+              connection.end();
+            });
+          });
+          //console.log(roleID[0].id);
+          // console.log(roleID);
+          
+        //     // connection.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${answer.firstName}","${answer.lastName}",${answer.roleID},${answer.managerID})`, function (err, result) {
+        //     //     if (err) throw err;
+        //     //     console.log(result.affectedRows + " record(s) updated");
+        //     // })
             
-            connection.end();
-        });
+        //     // connection.end();
+         });
 }
 
+// ========================================Role Function==================================================

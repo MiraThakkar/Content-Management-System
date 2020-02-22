@@ -54,5 +54,8 @@ r.department_id =d.id;
 SELECT  e.first_name, e.last_name, r.title
 FROM employee e, role r
 WHERE e.role_id = r.id;
+select first_name, last_name from employee e, role r where e.role_id = r.id and r.title="Manager";
 
-SELECT first_name, last_name FROM employee;
+SELECT * FROM employee;
+
+SELECT e.first_name, e.last_name, r.title FROM employee e, role r WHERE e.role_id = r.id AND r.title = "Manager";
