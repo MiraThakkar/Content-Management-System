@@ -62,4 +62,4 @@ SELECT e.first_name, e.last_name, r.title FROM employee e, role r WHERE e.role_i
 
 select * from employee;
 
-SELECT * FROM employee e1, employee e2 WHERE e2.id = e1.manager_id and e2.id = "4";
+SELECT d.name as 'Department Name', SUM(salary) as 'Utilized Budget' FROM employee e, role r, department d WHERE e.role_id = r.id and r.department_id = d.id and d.name = "Marketing";

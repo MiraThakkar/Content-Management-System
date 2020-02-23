@@ -37,7 +37,8 @@ function startApp() {
                   "Add New Role",
                   "Edit Employee Manager", 
                   "Edit Employee Role", 
-                  "Remove Employee"
+                  "Remove Employee",
+                  "View the total utilized Budget of a Department"
                 ]
       })
       .then(function(answer) {
@@ -87,6 +88,10 @@ function startApp() {
           
           case "Remove Employee":
             removeEmployee();
+            break;
+
+          case "View the total utilized Budget of a Department":
+            viewBudgetByDepartment();
             break;
                       
           default:
@@ -499,4 +504,28 @@ async function removeEmployee() {
     });
     
   });
+}
+
+
+// ===============================View budget by department===============================
+async function viewBudgetByDepartment() {
+  var departmentNames = await getDepartments();
+  inquirer
+    .prompt({
+      name: "name",
+      type: "list",
+      message: "Select Department",
+      choices: departmentNames
+      })
+      .then(function(answer){
+
+        var query= "SELECT d.name as 'Department Name', SUM(salary) as 'Utilized Budget' FROM employee e, role r, department d WHERE e.role_id = r.id and r.department_id = d.id and d.name = ?";
+        connection.query(query, answer.name, function(err, results) {
+          if (err) throw err;
+          console.log("Total utilized budged of " + answer.name + " Department is as follows:")
+          console.table(results);
+          connection.end();
+          return results;
+        });
+    });
 }
