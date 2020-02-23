@@ -64,7 +64,7 @@ function startApp() {
             break;
           
           case "Remove Employee":
-            console.log("Remove Employee - Function to be written");
+            removeEmployee();
             break;
                       
           default:
@@ -104,21 +104,6 @@ function viewRoles() {
       connection.end();
       return results;
   });
-}
-
-//==========================Remove Employee========================================
-function removeEmployee() {
-    inquirer
-    .prompt({
-      name: "deleteemployee",
-      type: "list",
-      message: "?",
-      choices: ["View All Employees", "View Employees By Department", "View Employees By Role", "Add Employee",
-       "Edit Employee Manager", "Edit Employee Role", "Remove Employee"]
-    })
-    .then(function(answer) {
-      console.log(answer);
-    });
 }
 
 // ===============================View employee by department===============================
@@ -211,7 +196,26 @@ function getManagers(){
       return resolve(managerNames);
     })
   });
+
 }
+
+
+// get Employees - Promisified function
+function getEmployees(){
+  return new Promise((resolve, reject) => {
+    connection.query("SELECT first_name, last_name FROM employee", function(err, results) {
+      if (err) return reject(err);        
+      var employeeNames = [];
+      for (var i = 0; i < results.length; i++){
+          employeeNames.push(results[i].first_name + " " + results[i].last_name);
+      }
+      return resolve(employeeNames);
+    })
+  });
+}
+
+
+
 
 // =======================================Add Employee==============================================================
 
@@ -281,4 +285,28 @@ function getManagers(){
          });
 }
 
-// ========================================Role Function==================================================
+//==========================Remove Employee========================================
+async function removeEmployee() {
+  let employeeNames = await getEmployees();
+  inquirer
+  .prompt({
+    name: "empName",
+    type: "list",
+    message: "Which employee would you like to remove?",
+    choices: employeeNames
+  })
+  .then(function(answer) {
+    
+    var employeeFirstName = answer.empName.split(' ').slice(0, -1).join(' ');
+    var employeeLastName = answer.empName.split(' ').slice(-1).join(' ');
+
+    connection.query("DELETE FROM employee WHERE ? AND ?", [{first_name:employeeFirstName}, {last_name:employeeLastName}], function(err, result){
+            
+      if (err) throw err;
+      console.log(result.affectedRows + " record(s) deleted");
+      connection.end();
+    });
+    
+  });
+}
+
